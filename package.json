@@ -4,6 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
+    "prebuild": "rimraf dist",
     "build": "npx tsc",
     "start": "node dist/index.js",
     "dev": "nodemon api/index.ts"
