@@ -5,7 +5,7 @@ const connectDataBase = async () => {
   mongoose.set("strictQuery", true);
   //
   mongoose
-    .connect(config.databaseUri)
+    .connect(config.DB_URI)
     .then(() => console.log("[DTBASE]: Connection successful"))
     .catch((err) => console.log(`[DB ERR]: ${err}`));
 };

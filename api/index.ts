@@ -5,7 +5,7 @@ import config from "./config";
 
 const app: Express = express();
 
-const PORT = config.port || 5000;
+const PORT = config.PORT || 5000;
 
 // connect database
 connectDataBase();
