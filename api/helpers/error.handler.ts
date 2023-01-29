@@ -49,10 +49,12 @@ function errorHandler(error: DBError, res: Response, model: string) {
   if (code && errMsg) {
     return res.status(+code).json({
       success: false,
-      message: errMsg,
+      error: errMsg,
     });
   } else {
-    return res.status(500).send({ success: false, error });
+    return res
+      .status(500)
+      .send({ success: false, error: Object.keys(error).length ? error : "Something went wrong, try again later" });
   }
 }
 
