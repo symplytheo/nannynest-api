@@ -1,9 +1,10 @@
 import { Request, Response } from "express";
 import { customAlphabet } from "nanoid/async";
-import jwt, { Secret } from "jsonwebtoken";
+import jwt, { JwtPayload, Secret } from "jsonwebtoken";
 import errorHandler, { DBError } from "../helpers/error.handler";
 import Phone from "../models/phone.model";
 import Client from "../models/client.model";
+import { CustomRequest } from "../middleware/auth";
 import config from "../config";
 
 export const submitPhoneNumber = async (req: Request, res: Response) => {
@@ -52,9 +53,7 @@ export const verifyOtp = async (req: Request, res: Response) => {
       newUser = true;
     }
     // generate jwtoken
-    const access_token = jwt.sign({ _id: user._id, phone: user.phone }, config.JWT_SECRET as Secret, {
-      expiresIn: "7d",
-    });
+    const access_token = jwt.sign({ _id: user._id }, config.JWT_SECRET as Secret, {});
     // remove phone session
     await Phone.findOneAndDelete({ _id: phone._id });
     // response
@@ -63,5 +62,29 @@ export const verifyOtp = async (req: Request, res: Response) => {
       .json({ success: true, message: "User authenticated successfully", data: { user, access_token, new: newUser } });
   } catch (error) {
     errorHandler(error as DBError, res, "phone");
+  }
+};
+
+export const updateProfile = async (req: Request, res: Response) => {
+  try {
+    const _id = ((req as CustomRequest).user as JwtPayload)._id;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { phone, ...others } = req.body;
+    const user = await Client.findOneAndUpdate({ _id }, { ...others }, { new: true });
+    // response
+    return res.status(200).json({ success: true, message: "Profile updated successfully", data: { user } });
+  } catch (error) {
+    errorHandler(error as DBError, res, "user");
+  }
+};
+
+export const getProfile = async (req: Request, res: Response) => {
+  try {
+    const _id = ((req as CustomRequest).user as JwtPayload)._id;
+    const user = await Client.findOne({ _id });
+    // response
+    return res.status(200).json({ success: true, message: "Profile fetched successfully", data: { user } });
+  } catch (error) {
+    errorHandler(error as DBError, res, "user");
   }
 };
