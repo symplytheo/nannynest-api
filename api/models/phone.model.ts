@@ -6,7 +6,7 @@ interface IPhone extends Document {
   otp?: string;
 }
 
-export const phoneSchema = new mongoose.Schema<IPhone>({
+const phoneSchema = new mongoose.Schema<IPhone>({
   code: { type: String, required: true },
   number: { type: String, required: true },
   otp: String,
@@ -14,7 +14,6 @@ export const phoneSchema = new mongoose.Schema<IPhone>({
 
 phoneSchema.set("toJSON", {
   transform: (document, returnedObject) => {
-    returnedObject.id = returnedObject._id.toString();
     delete returnedObject._id;
     delete returnedObject.__v;
   },
