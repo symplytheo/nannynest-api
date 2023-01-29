@@ -1,8 +1,11 @@
 import { Router } from "express";
-import { submitPhoneNumber } from "../controllers/auth.controller";
+import { submitPhoneNumber, verifyOtp } from "../controllers/auth.controller";
 
-const authRouter = Router();
+const router = Router();
 
-authRouter.post("/", submitPhoneNumber);
+router.post("/", submitPhoneNumber);
+router.post("/verify-otp", verifyOtp);
+
+const authRouter = router;
 
 export default authRouter;
