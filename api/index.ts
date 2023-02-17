@@ -2,6 +2,8 @@ import express, { Express, Response, Request } from "express";
 import connectDataBase from "./config/db.config";
 import authRouter from "./routes/auth.route";
 import config from "./config";
+import adminRouter from "./routes/admin.route";
+import orderRouter from "./routes/order.route";
 
 const app: Express = express();
 
@@ -22,6 +24,10 @@ app.get("/", (req: Request, res: Response) => {
 });
 // authentication route
 app.use("/auth", authRouter);
+// order route
+app.use("/orders", orderRouter);
+// admin route
+app.use("/admin", adminRouter);
 
 // listener
 app.listen(PORT, () => {

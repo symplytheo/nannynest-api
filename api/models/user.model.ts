@@ -1,38 +1,41 @@
 import mongoose, { Document } from "mongoose";
 
-interface IClient extends Document {
+export interface IUser extends Document {
   name?: string;
   email?: string;
   avatar?: string;
-  location?: string;
+  location: { lat: number; long: number };
   phone: { code: string; number: string };
   socials?: { facebook: string; twitter: string; instagram: string; linkedin: string };
   dateOfBirth?: string;
-  otp?: string;
+  paymentMethod?: string;
+  type?: string;
 }
 
-const clientSchema = new mongoose.Schema<IClient>(
+const userSchema = new mongoose.Schema<IUser>(
   {
     name: String,
     phone: { code: { type: String, required: true }, number: { type: String, required: true } },
-    email: { type: String, unique: false },
+    email: String,
     avatar: String,
     dateOfBirth: String,
-    location: String,
+    location: { lat: { type: Number, default: 0 }, long: { type: Number, default: 0 } },
+    paymentMethod: String, // cash or card number
     socials: { facebook: String, twitter: String, instagram: String, linkedin: String },
-    otp: String,
+    type: { type: String, default: "Client" },
   },
-  { timestamps: true }
+  { timestamps: true, discriminatorKey: "type" }
 );
 
-clientSchema.set("toJSON", {
-  transform: (document, returnedObject) => {
+userSchema.set("toJSON", {
+  transform: (doc, returnedObject) => {
     returnedObject.id = returnedObject._id.toString();
     delete returnedObject._id;
     delete returnedObject.__v;
+    delete returnedObject.otp;
   },
 });
 
-const Client = mongoose.model("Client", clientSchema);
+const User = mongoose.model("User", userSchema);
 
-export default Client;
+export default User;
