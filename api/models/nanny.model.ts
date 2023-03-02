@@ -8,6 +8,7 @@ export interface INanny extends IUser {
   pronouns: string;
   languages: string[];
   nationality: string;
+  idCard: string;
   experienceYears: string;
   categories: { _id: string; name: string }[];
 }
@@ -21,6 +22,7 @@ const Nanny = User.discriminator(
     pronouns: String,
     languages: [String],
     nationality: String,
+    idCard: { type: String, required: true },
     experienceYears: String,
     categories: [{ _id: String, name: String }],
   })
