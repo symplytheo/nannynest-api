@@ -26,7 +26,7 @@ export const getUserOrders = async (req: Request, res: Response) => {
     // response
     return res.status(200).json({ success: true, message: "Orders fetched successfully", query, data: orders });
   } catch (error) {
-    errorHandler(error as DBError, res, "Category");
+    errorHandler(error as DBError, res, "Orders");
   }
 };
 
@@ -38,9 +38,9 @@ export const getSingleOrder = async (req: Request, res: Response) => {
       order = await Order.findOne({ referenceId: id });
     }
     // response
-    return res.status(200).json({ success: true, message: "Orders fetched successfully", data: order });
+    return res.status(200).json({ success: true, message: "Order fetched successfully", data: order });
   } catch (error) {
-    errorHandler(error as DBError, res, "Category");
+    errorHandler(error as DBError, res, "Order");
   }
 };
 
