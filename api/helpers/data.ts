@@ -1,2 +1,2 @@
-export const STATUS = ["pending", "completed", "rejected", "accepted", "cancelled"];
-export const NANNYDEST = ["ontheway", "arrived"];
+export const STATUS = ["pending", "completed", "rejected", "accepted", "cancelled", "ongoing"];
+export const NANNYDEST = ["ontheway", "arrived", null];

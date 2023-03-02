@@ -3,6 +3,7 @@ import {
   createOrder,
   getAddressBook,
   getReviews,
+  getSingleOrder,
   getUserOrders,
   reviewNanny,
   updateOrder,
@@ -12,7 +13,7 @@ import { isAuthenticated } from "../middleware/auth";
 const router = Router();
 
 router.route("/").get(isAuthenticated, getUserOrders).post(isAuthenticated, createOrder);
-router.put("/:id", isAuthenticated, updateOrder);
+router.route("/:id").get(getSingleOrder).put(isAuthenticated, updateOrder);
 router.get("/address", isAuthenticated, getAddressBook);
 router.route("/reviews").get(isAuthenticated, getReviews).post(isAuthenticated, reviewNanny);
 

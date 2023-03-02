@@ -14,14 +14,31 @@ export const getUserOrders = async (req: Request, res: Response) => {
   try {
     const _id = ((req as CustomRequest).user as JwtPayload)._id;
     const user = await User.findOne({ _id });
+    const { fields, status } = req.query;
+    const query = fields ? (fields as string).split(",").join(" ") : fields;
+    const _status = status ? (status as string).split(",") : STATUS;
     let orders;
     if (user?.type === "Nanny") {
-      orders = await Order.find({ "nanny.id": _id }).sort({ createdAt: -1 });
+      orders = await Order.find({ "nanny.id": _id, status: { $in: _status } }, query).sort({ createdAt: -1 });
     } else {
-      orders = await Order.find({ "client.id": _id }).sort({ createdAt: -1 });
+      orders = await Order.find({ "client.id": _id }, query).sort({ createdAt: -1 });
     }
     // response
-    return res.status(200).json({ success: true, message: "Orders fetched successfully", data: orders });
+    return res.status(200).json({ success: true, message: "Orders fetched successfully", query, data: orders });
+  } catch (error) {
+    errorHandler(error as DBError, res, "Category");
+  }
+};
+
+export const getSingleOrder = async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id;
+    let order = await Order.findOne({ _id: id });
+    if (!order) {
+      order = await Order.findOne({ referenceId: id });
+    }
+    // response
+    return res.status(200).json({ success: true, message: "Orders fetched successfully", data: order });
   } catch (error) {
     errorHandler(error as DBError, res, "Category");
   }
