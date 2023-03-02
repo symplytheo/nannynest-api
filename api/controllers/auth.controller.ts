@@ -8,6 +8,8 @@ import config from "../config";
 import User from "../models/user.model";
 import Nanny from "../models/nanny.model";
 import Category from "../models/category.model";
+import Bank from "../models/bank.model";
+import Card from "../models/card.model";
 
 export const submitPhoneNumber = async (req: Request, res: Response) => {
   try {
@@ -109,5 +111,75 @@ export const getProfile = async (req: Request, res: Response) => {
     return res.status(200).json({ success: true, message: "Profile fetched successfully", data: user });
   } catch (error) {
     errorHandler(error as DBError, res, "User");
+  }
+};
+
+export const addPaymentBank = async (req: Request, res: Response) => {
+  try {
+    const _id = ((req as CustomRequest).user as JwtPayload)._id;
+    const bank = await Bank.create({ nanny: _id, ...req.body });
+    // response
+    return res.status(200).json({ success: true, message: "Payment bank added successfully", data: bank });
+  } catch (error) {
+    errorHandler(error as DBError, res, "Bank");
+  }
+};
+
+export const getPaymentBanks = async (req: Request, res: Response) => {
+  try {
+    const _id = ((req as CustomRequest).user as JwtPayload)._id;
+    const banks = await Bank.find({ nanny: _id });
+    // response
+    return res.status(200).json({ success: true, message: "Payment banks fetched successfully", data: banks });
+  } catch (error) {
+    errorHandler(error as DBError, res, "Bank");
+  }
+};
+
+export const setActivePaymentBank = async (req: Request, res: Response) => {
+  try {
+    const nanny = ((req as CustomRequest).user as JwtPayload)._id;
+    await Bank.updateMany({ nanny }, { active: false });
+    const bank = await Bank.findOneAndUpdate({ _id: req.params.id }, { active: true }, { new: true });
+    // response
+    return res.status(200).json({ success: true, message: "Bank set as active payment method", data: bank });
+  } catch (error) {
+    errorHandler(error as DBError, res, "Bank");
+  }
+};
+
+export const addPaymentCard = async (req: Request, res: Response) => {
+  try {
+    const _id = ((req as CustomRequest).user as JwtPayload)._id;
+    let cvv = Number(req.body.cvv).toString(Number(config.BASE));
+    cvv = jwt.sign({ client: _id }, config.JWT_SECRET as Secret, {});
+    const card = await Card.create({ client: _id, ...req.body, cvv });
+    // response
+    return res.status(200).json({ success: true, message: "Payment card added successfully", data: card });
+  } catch (error) {
+    errorHandler(error as DBError, res, "Card");
+  }
+};
+
+export const getPaymentCards = async (req: Request, res: Response) => {
+  try {
+    const _id = ((req as CustomRequest).user as JwtPayload)._id;
+    const cards = await Card.find({ client: _id });
+    // response
+    return res.status(200).json({ success: true, message: "Payment cards fetched successfully", data: cards });
+  } catch (error) {
+    errorHandler(error as DBError, res, "Card");
+  }
+};
+
+export const setActivePaymentCard = async (req: Request, res: Response) => {
+  try {
+    const client = ((req as CustomRequest).user as JwtPayload)._id;
+    await Card.updateMany({ client }, { active: false });
+    const card = await Card.findOneAndUpdate({ _id: req.params.id }, { active: true }, { new: true });
+    // response
+    return res.status(200).json({ success: true, message: "Card set as active payment method", data: card });
+  } catch (error) {
+    errorHandler(error as DBError, res, "Card");
   }
 };
