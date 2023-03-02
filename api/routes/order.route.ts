@@ -13,9 +13,9 @@ import { isAuthenticated } from "../middleware/auth";
 const router = Router();
 
 router.route("/").get(isAuthenticated, getUserOrders).post(isAuthenticated, createOrder);
-router.route("/:id").get(getSingleOrder).put(isAuthenticated, updateOrder);
-router.get("/address", isAuthenticated, getAddressBook);
 router.route("/reviews").get(isAuthenticated, getReviews).post(isAuthenticated, reviewNanny);
+router.get("/address", isAuthenticated, getAddressBook);
+router.route("/:id").get(getSingleOrder).put(isAuthenticated, updateOrder);
 
 const orderRouter = router;
 
