@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import User, { IUser } from "./user.model";
 
 export interface INanny extends IUser {
+  available: boolean;
   bio: string;
   rating: number;
   pronouns: string;
@@ -14,6 +15,7 @@ export interface INanny extends IUser {
 const Nanny = User.discriminator(
   "Nanny",
   new mongoose.Schema<INanny>({
+    available: false,
     bio: String,
     rating: { type: Number, required: true, default: 0 },
     pronouns: String,
