@@ -6,6 +6,7 @@ interface ICard extends Document {
   expiry: string;
   cvv: string; // converted to hexa or hashed or tokened
   verified: boolean;
+  active: boolean;
 }
 
 const cardSchema = new mongoose.Schema<ICard>(
@@ -15,6 +16,7 @@ const cardSchema = new mongoose.Schema<ICard>(
     expiry: { type: String, required: false },
     cvv: { type: String, required: false },
     verified: { type: Boolean, default: false },
+    active: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

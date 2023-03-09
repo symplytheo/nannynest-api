@@ -1,8 +1,9 @@
 import mongoose, { Document } from "mongoose";
+import { NANNYDEST, STATUS } from "../helpers/data";
 
 interface IOrder extends Document {
   referenceId: string;
-  status: "pending" | "completed" | "rejected" | "accepted" | "cancelled";
+  status: "pending" | "completed" | "rejected" | "accepted" | "cancelled" | "ongoing";
   price: { subtotal: number; transportation: number; total: number };
   address: { latitude: number; longitude: number };
   estimatedArrivalTime?: number; // in minutes
@@ -28,7 +29,7 @@ const orderSchema = new mongoose.Schema<IOrder>(
     referenceId: { type: String, required: true },
     start: { date: String, time: String },
     end: { date: String, time: String },
-    status: { type: String, enum: ["pending", "completed", "rejected", "accepted", "cancelled"], default: "pending" },
+    status: { type: String, enum: STATUS, default: "pending" },
     price: {
       subtotal: { type: Number, default: 0 },
       transportation: { type: Number, default: 0 },
@@ -50,7 +51,7 @@ const orderSchema = new mongoose.Schema<IOrder>(
       dateOfBirth: { type: String, required: true },
       rating: { type: Number, required: true },
       distance: String || Number,
-      status: { type: String, enum: ["ontheway", "arrived", null], default: null },
+      status: { type: String, enum: NANNYDEST, default: null },
     },
     beneficiaries: [{ name: String, quantity: Number }],
     comment: String,
