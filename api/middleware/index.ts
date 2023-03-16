@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload, Secret } from "jsonwebtoken";
 import config from "../config";
+import Admin from "../models/admin.model";
 
 export interface CustomRequest extends Request {
   user: string | JwtPayload;
@@ -24,6 +25,20 @@ export const isAuthenticated = async (req: Request, res: Response, next: NextFun
       }
     } else {
       return res.status(401).json({ success: false, message: "No authorization token provided" });
+    }
+  } catch (error) {
+    return res.status(500).json({ success: false, error });
+  }
+};
+
+export const isAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const _id = ((req as CustomRequest).user as JwtPayload)._id;
+    const admin = await Admin.findOne({ _id });
+    if (admin) {
+      next();
+    } else {
+      return res.status(403).json({ success: false, message: "User is not an admin" });
     }
   } catch (error) {
     return res.status(500).json({ success: false, error });
