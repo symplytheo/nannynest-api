@@ -1,13 +1,13 @@
 import { Request, Response } from "express";
 import Order from "../models/order.model";
 import errorHandler, { DBError } from "../helpers/error.handler";
-import { CustomRequest } from "../middleware/auth";
+import { CustomRequest } from "../middleware";
 import { JwtPayload } from "jsonwebtoken";
 import User, { IUser } from "../models/user.model";
 import { nanoid } from "nanoid";
 import { getDistance } from "geolib";
 import Nanny, { INanny } from "../models/nanny.model";
-import { NANNYDEST, STATUS } from "../helpers/data";
+import { CATEGORIES, NANNYDEST, STATUS } from "../helpers/data";
 import Review from "../models/review.model";
 
 export const getUserOrders = async (req: Request, res: Response) => {
@@ -161,5 +161,24 @@ export const reviewNanny = async (req: Request, res: Response) => {
     return res.status(200).json({ success: true, message: "Review posted successfully", data: review });
   } catch (error) {
     errorHandler(error as DBError, res, "Review");
+  }
+};
+
+export const filterNannies = async (req: Request, res: Response) => {
+  try {
+    const { fields, name, rating, categories } = req.query;
+    const query = fields ? (fields as string).split(",").join(" ") : fields;
+    const category = categories ? (categories as string).split(",").join(" ") : CATEGORIES;
+    const regex = name ? new RegExp(name as string, "gi") : /^\w/;
+    const nannies = await Nanny.find(
+      { name: { $regex: regex, $options: "i" }, rating: { $gte: rating }, categories: { $in: category } },
+      query
+    ).sort({
+      createdAt: -1,
+    });
+    // response
+    return res.status(200).json({ success: true, message: "Search result retrieved", query, data: nannies });
+  } catch (error) {
+    errorHandler(error as DBError, res, "Nanny");
   }
 };

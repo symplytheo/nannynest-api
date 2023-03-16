@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   createOrder,
+  filterNannies,
   getAddressBook,
   getReviews,
   getSingleOrder,
@@ -8,13 +9,14 @@ import {
   reviewNanny,
   updateOrder,
 } from "../controllers/order.controller";
-import { isAuthenticated } from "../middleware/auth";
+import { isAuthenticated } from "../middleware";
 
 const router = Router();
 
 router.route("/").get(isAuthenticated, getUserOrders).post(isAuthenticated, createOrder);
 router.route("/reviews").get(isAuthenticated, getReviews).post(isAuthenticated, reviewNanny);
 router.get("/address", isAuthenticated, getAddressBook);
+router.get("/nannies", filterNannies);
 router.route("/:id").get(getSingleOrder).put(isAuthenticated, updateOrder);
 
 const orderRouter = router;
