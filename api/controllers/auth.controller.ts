@@ -3,13 +3,15 @@ import { customAlphabet } from "nanoid/async";
 import jwt, { JwtPayload, Secret } from "jsonwebtoken";
 import errorHandler, { DBError } from "../helpers/error.handler";
 import Phone from "../models/phone.model";
-import { CustomRequest } from "../middleware/auth";
+import { CustomRequest } from "../middleware";
 import config from "../config";
 import User from "../models/user.model";
 import Nanny from "../models/nanny.model";
 import Category from "../models/category.model";
 import Bank from "../models/bank.model";
 import Card from "../models/card.model";
+import Order from "../models/order.model";
+import Review from "../models/review.model";
 
 export const submitPhoneNumber = async (req: Request, res: Response) => {
   try {
@@ -70,16 +72,6 @@ export const verifyOtp = async (req: Request, res: Response) => {
     return res
       .status(200)
       .json({ success: true, message: "User authenticated successfully", data: user, access_token, newUser });
-  } catch (error) {
-    errorHandler(error as DBError, res, "User");
-  }
-};
-
-export const getAllUsers = async (req: Request, res: Response) => {
-  try {
-    const users = await User.find({}).sort({ createdAt: -1 });
-    // response
-    return res.status(200).json({ success: true, message: "Users fetched successfully", data: users });
   } catch (error) {
     errorHandler(error as DBError, res, "User");
   }
@@ -181,5 +173,29 @@ export const setActivePaymentCard = async (req: Request, res: Response) => {
     return res.status(200).json({ success: true, message: "Card set as active payment method", data: card });
   } catch (error) {
     errorHandler(error as DBError, res, "Card");
+  }
+};
+
+export const getNannyDashboardStats = async (req: Request, res: Response) => {
+  try {
+    const _id = ((req as CustomRequest).user as JwtPayload)._id;
+    const user = await User.findOne({ _id });
+    if (user?.type === "Client") {
+      return res.status(403).json({ success: false, error: "User must be a Nanny" });
+    }
+    const total_orders = await Order.estimatedDocumentCount({ "nanny.id": _id });
+    const completed = await Order.find({ "nanny.id": _id, status: "completed" });
+    const total_earnings = Array.from(completed).reduce((sum, order) => sum + order.price.subtotal, 0);
+    const total_reviews = await Review.estimatedDocumentCount({ nanny: _id });
+    const total_new_orders = await Order.estimatedDocumentCount({ "nanny.id": _id, status: "pending" });
+    const total_upcoming_orders = await Order.estimatedDocumentCount({ "nanny.id": _id, status: "accepted" });
+    // response
+    return res.status(200).json({
+      success: true,
+      message: "Nanny dashboard fetched successfully",
+      data: { total_orders, total_earnings, total_reviews, total_new_orders, total_upcoming_orders },
+    });
+  } catch (error) {
+    errorHandler(error as DBError, res, "Nanny");
   }
 };
