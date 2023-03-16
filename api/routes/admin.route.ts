@@ -4,6 +4,7 @@ import {
   createAdmin,
   createCategory,
   deleteUser,
+  getAdminDashboardStats,
   getAllAdmins,
   getAllCategories,
   getAllClients,
@@ -28,24 +29,35 @@ router.route("/").get(isAuthenticated, isAdmin, getAllAdmins).post(isAuthenticat
 router.route("/me").get(isAuthenticated, isAdmin, getProfile).put(isAuthenticated, isAdmin, updateProfile);
 router.post("/login", loginAdmin);
 router.post("/password", isAuthenticated, isAdmin, changePassword);
+router.get("/dashboard", isAuthenticated, isAdmin, getAdminDashboardStats);
 
 // categories
-router.route("/categories").get(getAllCategories).post(isAuthenticated, isAdmin, createCategory);
+router
+  .route("/categories")
+  .get(isAuthenticated, isAdmin, getAllCategories)
+  .post(isAuthenticated, isAdmin, createCategory);
 router.put("/categories/:id", isAuthenticated, isAdmin, updateCategory);
 
 // get all orders / transactions
-router.get("/orders", getAllOrders);
-// order stats ==> total_trans = orders count, total sales = order completed + ongoing count, totalPayout = ordercompleted
+router.get("/orders", isAuthenticated, isAdmin, getAllOrders);
 // get order details
-router.get("/orders/:id", getSingleOrder);
+router.get("/orders/:id", isAuthenticated, isAdmin, getSingleOrder);
 // clients
-router.get("/clients", getAllClients); // get all clients
-router.get("/clients/orders/:id", getClientOrders); // get a client orders
-router.route("/clients/:id").get(getSingleUser).put(suspendUser).delete(deleteUser);
+router.get("/clients", isAuthenticated, isAdmin, getAllClients); // get all clients
+router
+  .route("/clients/:id")
+  .get(isAuthenticated, isAdmin, getSingleUser)
+  .put(isAuthenticated, isAdmin, suspendUser)
+  .delete(isAuthenticated, isAdmin, deleteUser);
+router.get("/clients/:id/orders/", isAuthenticated, isAdmin, getClientOrders); // get a client orders
 // nannies
-router.get("/nannies", getAllNannies);
-router.route("/nannies/:id").get(getSingleUser).put(suspendUser).delete(deleteUser);
-router.get("/nannies/orders/:id", getNannyOrders); // get a nanny orders
+router.get("/nannies", isAuthenticated, isAdmin, getAllNannies);
+router
+  .route("/nannies/:id")
+  .get(isAuthenticated, isAdmin, getSingleUser)
+  .put(isAuthenticated, isAdmin, suspendUser)
+  .delete(isAuthenticated, isAdmin, deleteUser);
+router.get("/nannies/:id/orders", isAuthenticated, isAdmin, getNannyOrders); // get a nanny orders
 
 // admin delete
 router.delete("/:id", isAuthenticated, isAdmin, removeAdmin);
