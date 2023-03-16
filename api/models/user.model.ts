@@ -10,6 +10,7 @@ export interface IUser extends Document {
   dateOfBirth?: string;
   paymentMethod?: string;
   type?: string;
+  suspended: boolean;
 }
 
 const userSchema = new mongoose.Schema<IUser>(
@@ -23,6 +24,7 @@ const userSchema = new mongoose.Schema<IUser>(
     paymentMethod: String, // cash or card number
     socials: { facebook: String, twitter: String, instagram: String, linkedin: String },
     type: { type: String, default: "Client" },
+    suspended: { type: Boolean, default: false },
   },
   { timestamps: true, discriminatorKey: "type" }
 );
