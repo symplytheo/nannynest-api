@@ -44,15 +44,15 @@ export const updateCategory = async (req: Request, res: Response) => {
 
 export const getAdminDashboardStats = async (req: Request, res: Response) => {
   try {
-    const total_users = await User.estimatedDocumentCount();
-    const total_clients = await User.estimatedDocumentCount({ type: "Client" });
-    const total_nannies = await User.estimatedDocumentCount({ type: "Nanny" });
+    const total_users = await User.countDocuments();
+    const total_clients = await User.countDocuments({ type: "Client" });
+    const total_nannies = await User.countDocuments({ type: "Nanny" });
     const _total_sales = await Order.find({ status: { $in: ["ongoing", "completed"] } });
     const total_sales = Array.from(_total_sales).reduce((sum, order) => sum + order.price.subtotal, 0);
     const _total_payouts = await Order.find({ status: "completed" });
     const total_payouts = Array.from(_total_payouts).reduce((sum, order) => sum + order.price.subtotal, 0);
-    const active_users = await User.estimatedDocumentCount({ suspended: false });
-    const suspended_users = await User.estimatedDocumentCount({ suspended: true });
+    const active_users = await User.countDocuments({ suspended: false });
+    const suspended_users = await User.countDocuments({ suspended: true });
     // response
     return res.status(200).json({
       success: true,
@@ -110,12 +110,14 @@ export const loginAdmin = async (req: Request, res: Response) => {
         // generate token
         const token = jwt.sign({ _id: admin._id }, config.JWT_SECRET as Secret, {});
         // response
-        return res.status(200).json({ success: true, data: { admin, token } });
+        return res
+          .status(200)
+          .json({ success: true, message: "Admin authenticated successfully", data: { admin, token } });
       } else {
-        return res.status(401).json({ success: false, message: "Password is incorrect" });
+        return res.status(401).json({ success: false, error: "Password is incorrect" });
       }
     } else {
-      return res.status(404).json({ success: false, message: "Admin with such email does not exist" });
+      return res.status(404).json({ success: false, error: "Admin with such email does not exist" });
     }
   } catch (error) {
     errorHandler(error as DBError, res, "Admin");
@@ -124,10 +126,12 @@ export const loginAdmin = async (req: Request, res: Response) => {
 
 export const getAllClients = async (req: Request, res: Response) => {
   try {
-    const clients = await User.find({ type: "Client" }).sort({ createdAt: -1 });
-    const total_clients = await User.estimatedDocumentCount({ type: "Client" });
-    const active_clients = await User.estimatedDocumentCount({ type: "Client", suspended: false });
-    const total_orders = await Order.estimatedDocumentCount({});
+    const { fields } = req.query;
+    const query = fields ? (fields as string).split(",").join(" ") : fields;
+    const clients = await User.find({ type: "Client" }, query).sort({ createdAt: -1 });
+    const total_clients = await User.countDocuments({ type: "Client" });
+    const active_clients = await User.countDocuments({ type: "Client", suspended: false });
+    const total_orders = await Order.countDocuments({});
     const _client_payins = await Order.find({ status: "completed" });
     const total_client_payins = Array.from(_client_payins).reduce((sum, order) => sum + order.price.subtotal, 0);
     // response
@@ -143,9 +147,11 @@ export const getAllClients = async (req: Request, res: Response) => {
 
 export const getAllNannies = async (req: Request, res: Response) => {
   try {
-    const nannies = await Nanny.find({}).sort({ createdAt: -1 });
-    const total_nannies = await Nanny.estimatedDocumentCount();
-    const available_nannies = await Nanny.estimatedDocumentCount({ available: true });
+    const { fields } = req.query;
+    const query = fields ? (fields as string).split(",").join(" ") : fields;
+    const nannies = await Nanny.find({}, query).sort({ createdAt: -1 });
+    const total_nannies = await Nanny.countDocuments();
+    const available_nannies = await Nanny.countDocuments({ available: true });
     const _total_nanny_sales = await Order.find({ status: { $in: ["ongoing", "completed"] } });
     const total_nanny_sales = Array.from(_total_nanny_sales).reduce((sum, order) => sum + order.price.subtotal, 0);
     const _total_nanny_payouts = await Order.find({ status: "completed" });
@@ -189,7 +195,7 @@ export const removeAdmin = async (req: Request, res: Response) => {
     const { id } = req.params;
     const admin = await Admin.findOneAndRemove({ _id: id });
     // response
-    return res.status(200).json({ success: true, data: admin });
+    return res.status(200).json({ success: true, message: "Admin has been deleted", data: admin });
   } catch (error) {
     errorHandler(error as DBError, res, "Admin");
   }
@@ -226,7 +232,7 @@ export const getAllOrders = async (req: Request, res: Response) => {
     const query = fields ? (fields as string).split(",").join(" ") : fields;
     const _status = status ? (status as string).split(",") : STATUS;
     const transactions = await Order.find({ status: { $in: _status } }, query).sort({ createdAt: -1 });
-    const total_transactions = await Order.estimatedDocumentCount();
+    const total_transactions = await Order.countDocuments();
     const _total_sales = await Order.find({ status: { $in: ["completed", "ongoing"] } });
     const total_sales = Array.from(_total_sales).reduce((sum, order) => sum + order.price.subtotal, 0);
     const _total_payouts = await Order.find({ status: "completed" });
@@ -253,7 +259,7 @@ export const getNannyOrders = async (req: Request, res: Response) => {
     const completed = await Order.find({ "nanny.id": id, status: "completed" });
     const total_amount_made = Array.from(completed).reduce((sum, order) => sum + order.price.subtotal, 0);
     const total_completed = Array.from(completed).length;
-    const total_cancelled = await Order.estimatedDocumentCount({
+    const total_cancelled = await Order.countDocuments({
       "nanny.id": id,
       status: { $in: ["cancelled", "rejected"] },
     });

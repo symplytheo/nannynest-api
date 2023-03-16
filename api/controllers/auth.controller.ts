@@ -183,12 +183,12 @@ export const getNannyDashboardStats = async (req: Request, res: Response) => {
     if (user?.type === "Client") {
       return res.status(403).json({ success: false, error: "User must be a Nanny" });
     }
-    const total_orders = await Order.estimatedDocumentCount({ "nanny.id": _id });
+    const total_orders = await Order.countDocuments({ "nanny.id": _id });
     const completed = await Order.find({ "nanny.id": _id, status: "completed" });
     const total_earnings = Array.from(completed).reduce((sum, order) => sum + order.price.subtotal, 0);
-    const total_reviews = await Review.estimatedDocumentCount({ nanny: _id });
-    const total_new_orders = await Order.estimatedDocumentCount({ "nanny.id": _id, status: "pending" });
-    const total_upcoming_orders = await Order.estimatedDocumentCount({ "nanny.id": _id, status: "accepted" });
+    const total_reviews = await Review.countDocuments({ nanny: _id });
+    const total_new_orders = await Order.countDocuments({ "nanny.id": _id, status: "pending" });
+    const total_upcoming_orders = await Order.countDocuments({ "nanny.id": _id, status: "accepted" });
     // response
     return res.status(200).json({
       success: true,
